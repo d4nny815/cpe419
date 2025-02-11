@@ -30,6 +30,7 @@ log: $(TARGET)
 	./$(TARGET) 10000 | sort > log10
 	./$(TARGET) 30000 | sort > log30
 	./$(TARGET) 100000 | sort > log100
+	./$(TARGET) 500000 | sort > log500
 	./$(TARGET) 1000000 | sort > log1000 & 
 
 prof: $(TARGET)

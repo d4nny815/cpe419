@@ -9,12 +9,12 @@ typedef struct { float x, y, z, vx, vy, vz; } Body;
 
 void randomizeBodies(Body *data, int n) {
   for (int i = 0; i < n; i++) {
-    data[i].x = 2.0f * i * i;
-    data[i].y = 2.0f * i * i;
-    data[i].z = 2.0f * i * i;
-    data[i].vx = 0.0f;
-    data[i].vy = 0.0f;
-    data[i].vz = 0.0f;
+    data[i].x = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i].y = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i].z = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i].vx = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i].vy = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
+    data[i].vz = 2.0f * (rand() / (float)RAND_MAX) - 1.0f;
   }
 }
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include "../common/timer.h"
 #include "../common/cuda_help.h"
 
@@ -9,19 +10,20 @@
 
 typedef struct { float x, y, z, vx, vy, vz; } Body;
 
-
-__global__ void randomizeBodies(Body *data, int n) {
+__global__ void randomizeBodies(Body *data, int n, unsigned long seed) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
-	int stride = blockDim.x * gridDim.x;
-	
+    int stride = blockDim.x * gridDim.x;
+
+    curandState state;
+    curand_init(seed, index, 0, &state);
+
     for (int i = index; i < n; i += stride) {
-        // printf("hi from thread: %d\n", i);
-        data[i].x = 2.0f * i * i;
-        data[i].y = 2.0f * i * i;
-        data[i].z = 2.0f * i * i;
-        data[i].vx = 0.0f;
-        data[i].vy = 0.0f;
-        data[i].vz = 0.0f;
+        data[i].x = 2.0f * curand_uniform(&state) - 1.0f; 
+        data[i].y = 2.0f * curand_uniform(&state) - 1.0f;
+        data[i].z = 2.0f * curand_uniform(&state) - 1.0f;
+        data[i].vx = 2.0f * curand_uniform(&state) - 1.0f;
+        data[i].vy = 2.0f * curand_uniform(&state) - 1.0f;
+        data[i].vz = 2.0f * curand_uniform(&state) - 1.0f;
     }
 }
 
@@ -136,7 +138,7 @@ int main(const int argc, const char** argv) {
     int num_blocks = 2 * sm;
 	int threads_per_block = 4 * MIN_CUDA_THREADS;
 
-    randomizeBodies<<<num_blocks, threads_per_block>>>(p, nBodies);
+    randomizeBodies<<<num_blocks, threads_per_block>>>(p, nBodies, time(NULL));
     CHECK_CUDA(cudaGetLastError());    
     CHECK_CUDA(cudaDeviceSynchronize());
 
