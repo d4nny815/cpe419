@@ -34,8 +34,11 @@ log: $(TARGET)
 	./$(TARGET) 1000000 | sort > log1000 & 
 
 prof: $(TARGET)
-	nvprof ./$(TARGET) 10000 1 | sort > log10
-	nvprof ./$(TARGET) 30000 | sort > log30
+	nvprof ./$(TARGET) 10000 | sort > /dev/null
+	nvprof ./$(TARGET) 30000 | sort > /dev/null
+	nvprof ./$(TARGET) 100000 | sort > /dev/null
+	nvprof ./$(TARGET) 500000 | sort > /dev/null
+	nvprof ./$(TARGET) 1000000 | sort > /dev/null
 
 debug:
 	$(NVCC) $(NVCC_FLAGS) -g -o $(TARGET) $(OBJECTS)
