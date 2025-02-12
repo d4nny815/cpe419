@@ -1,0 +1,94 @@
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VAL         (100)
+#define KERNEL_SIZE     (3)
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define WRAP_INDEX(idx, max) (((idx) + (max)) % (max))
+
+
+void init_arr(int* data, size_t n);
+void print_arr(int* data, size_t Nx, size_t Ny);
+
+void get_window(int* arr, int x, int y, size_t Nx, size_t Ny, 
+    int* window, size_t kernel_size);
+int convolve(int* window, float* kernel, size_t kernel_size);
+
+int main(const int argc, const char** argv) {
+    int Nx = 10;
+    int Ny = 10;
+    if (argc > 1) Nx = atoi(argv[1]);
+    if (argc > 2) Ny = atoi(argv[2]);
+
+    size_t mat_size = Nx * Ny;
+    size_t bytes = mat_size * sizeof(int);
+    
+    int* frame = (int*)malloc(bytes);
+    int* end_frame = (int*)malloc(bytes);
+
+    init_arr(frame, mat_size);
+    
+    const float KERNEL[KERNEL_SIZE * KERNEL_SIZE] = {1};
+
+    for (int i = 0; i < Ny; i++) {
+        for (int j = 0; j < Nx; j++) {
+            int window[KERNEL_SIZE * KERNEL_SIZE];
+            get_window(frame, j, i, Nx, Ny, window, KERNEL_SIZE);
+            end_frame[j * Nx + i] = convolve(window, KERNEL, KERNEL_SIZE);
+        }
+    }
+
+    print_arr(frame, Nx, Ny);
+    printf("\n==============\n\n");
+    print_arr(end_frame, Nx, Ny);
+
+    free(frame);
+    free(end_frame);
+
+    return 0;
+}
+
+void init_arr(int* data, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        data[i] = rand() % MAX_VAL;
+    }
+}
+
+void print_arr(int* data, size_t Nx, size_t Ny) {
+    for (int i = 0; i < Ny; i++) {
+        for (int j = 0; j < Nx; j++) {
+            printf("%d, ", data[j * Nx + i]);
+        }
+        printf("\n");
+    }
+}
+
+
+void get_window(int* arr, int x, int y, size_t Nx, size_t Ny, 
+    int* window, size_t kernel_size) {
+    
+    int offset = kernel_size / 2;
+
+    for (int i = 0; i < kernel_size; i++) {
+        for (int j = 0; j < kernel_size; j++) {
+            int xi = WRAP_INDEX(x + i - offset, Nx);  
+            int yj = WRAP_INDEX(y + j - offset, Ny);  
+            
+            window[i * kernel_size + j] = arr[xi * Ny + yj];  
+        }
+    }
+}
+
+
+int convolve(int* window, float* kernel, size_t kernel_size) {
+    int sum = 0;
+    for (int i = 0; i < kernel_size; i++) {
+        for (int j = 0; j < kernel_size; j++) {
+            size_t ind = i * kernel_size + j;
+            sum += window[ind] * kernel[ind];
+        }
+    }
+    return sum;
+}

@@ -1,0 +1,7 @@
+*/system_info
+*/*.o
+*/log*
+.vscode/
+
+*/nbody
+*/convolution
