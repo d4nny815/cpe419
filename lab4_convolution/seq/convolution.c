@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "../common/timer.h"
 
 #define MAX_VAL         (100)
 #define KERNEL_SIZE     (3)
@@ -17,20 +18,35 @@ void get_window(int* arr, int x, int y, size_t Nx, size_t Ny,
 int convolve(int* window, float* kernel, size_t kernel_size);
 
 int main(const int argc, const char** argv) {
-    int Nx = 10;
-    int Ny = 10;
-    if (argc > 1) Nx = atoi(argv[1]);
-    if (argc > 2) Ny = atoi(argv[2]);
+    size_t Nx = 100;
+    size_t Ny = 100;
+    if (argc == 2) {
+        Nx = atoi(argv[1]);
+    }
+    else if (argc == 3) {
+        Nx = atoi(argv[1]);
+        Ny = atoi(argv[2]);
+    }
 
     size_t mat_size = Nx * Ny;
     size_t bytes = mat_size * sizeof(int);
     
     int* frame = (int*)malloc(bytes);
+    if (!frame) {
+        perror("malloc failed\n");
+        exit(1);
+    }
     int* end_frame = (int*)malloc(bytes);
+    if (!frame) {
+        perror("malloc failed\n");
+        exit(1);
+    }
 
     init_arr(frame, mat_size);
     
-    const float KERNEL[KERNEL_SIZE * KERNEL_SIZE] = {1};
+    float KERNEL[KERNEL_SIZE * KERNEL_SIZE] = {1};
+
+    StartTimer();
 
     for (int i = 0; i < Ny; i++) {
         for (int j = 0; j < Nx; j++) {
@@ -40,9 +56,15 @@ int main(const int argc, const char** argv) {
         }
     }
 
+    const double tElapsed = GetTimer() / 1000.0;
+
+    printf("%zu, %zu, %lf\n", Nx, Ny, tElapsed);
+
+    #ifdef DEBUG
     print_arr(frame, Nx, Ny);
     printf("\n==============\n\n");
     print_arr(end_frame, Nx, Ny);
+    #endif
 
     free(frame);
     free(end_frame);

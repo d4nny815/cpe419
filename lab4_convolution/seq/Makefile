@@ -23,11 +23,14 @@ run: $(TARGET)
 	./$(TARGET)
 
 log: $(TARGET)
-	./$(TARGET) 10000 10 | sort > log10
-	./$(TARGET) 30000 10 | sort > log30
-	./$(TARGET) 100000 10 | sort > log100 &
-	# ./$(TARGET) 500000 10 | sort > log500
-	# ./$(TARGET) 1000000 10 | sort > log1000 &
+	@touch results.csv
+	@echo "Nx, Ny, time (sec)" > results.csv
+	./$(TARGET) 1000 1000 >> results.csv
+	./$(TARGET) 5000 5000 >> results.csv
+	./$(TARGET) 1000 5000 >> results.csv
+	./$(TARGET) 10000 10000 >> results.csv
+	./$(TARGET) 10000 50000 >> results.csv
+	./$(TARGET) 100000 500000 >> results.csv
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
