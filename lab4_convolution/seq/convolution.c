@@ -18,8 +18,8 @@ void get_window(int* arr, int x, int y, size_t Nx, size_t Ny,
 int convolve(int* window, float* kernel, size_t kernel_size);
 
 int main(const int argc, const char** argv) {
-    size_t Nx = 100;
-    size_t Ny = 100;
+    size_t Nx = 10000;
+    size_t Ny = 10000;
     if (argc == 2) {
         Nx = atoi(argv[1]);
     }
@@ -49,6 +49,7 @@ int main(const int argc, const char** argv) {
 
     StartTimer();
 
+    #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < Ny; i++) {
         for (int j = 0; j < Nx; j++) {
             int window[KERNEL_SIZE * KERNEL_SIZE];
