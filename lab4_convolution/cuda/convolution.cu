@@ -10,7 +10,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define WRAP_INDEX(idx, max) (((idx) + (max)) % (max))
-#define DEBUG
+// #define DEBUG
 
 
 void print_arr(int* data, size_t Nx, size_t Ny);
@@ -152,10 +152,9 @@ int main(const int argc, const char** argv) {
         CHECK_CUDA(cudaStreamSynchronize(streams[i]));
     }
 
-    const double tElapsed = GetTimer() / 1000.0;
-
     int* end_frame_h = (int*)malloc(bytes);
     CHECK_CUDA(cudaMemcpy(end_frame_h, end_frame, bytes, cudaMemcpyDeviceToHost));
+    const double tElapsed = GetTimer() / 1000.0;
 
     #ifdef DEBUG
     for (int i = 0; i < Ny; i++) {
@@ -173,7 +172,7 @@ int main(const int argc, const char** argv) {
 	printf("Num of bad_calcs %zu with max %f \n", bad_calcs, max_error);
     #endif
 
-    printf("%zu, %zu, %lf\n", Nx, Ny, tElapsed);
+    printf("%zu, %zu, %zu, %lf\n", Nx, Ny, mat_size, tElapsed);
 
     free(end_frame_h);
     CHECK_CUDA(cudaFree(frame));

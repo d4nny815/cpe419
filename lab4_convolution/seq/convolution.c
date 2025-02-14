@@ -59,7 +59,7 @@ int main(const int argc, const char** argv) {
 
     const double tElapsed = GetTimer() / 1000.0;
 
-    printf("%zu, %zu, %lf\n", Nx, Ny, tElapsed);
+    printf("%zu, %zu, %zu, %lf\n", Nx, Ny, mat_size, tElapsed);
 
     #ifdef DEBUG
     print_arr(frame, Nx, Ny);
