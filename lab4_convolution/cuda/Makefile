@@ -24,22 +24,25 @@ clean:
 	@echo "Clean complete"
 
 run: $(TARGET)
-	./$(TARGET) 5000 1
+	./$(TARGET)
 
 log: $(TARGET)
-	./$(TARGET) 10000 | sort > log10
-	./$(TARGET) 30000 | sort > log30
-	./$(TARGET) 100000 | sort > log100
-	./$(TARGET) 500000 | sort > log500
-	./$(TARGET) 1000000 | sort > log1000 & 
+	@touch results.csv
+	@echo "Nx, Ny, time (sec)" > results.csv
+	./$(TARGET) 1000 1000 >> results.csv
+	./$(TARGET) 5000 5000 >> results.csv
+	./$(TARGET) 1000 5000 >> results.csv
+	./$(TARGET) 10000 10000 >> results.csv
+	./$(TARGET) 10000 50000 >> results.csv
+	./$(TARGET) 20000 50000 >> results.csv
+	# ./$(TARGET) 50000 50000 >> results.csv
+	# ./$(TARGET) 100000 100000 >> results.csv
+	# ./$(TARGET) 1000000 1000000 >> results.csv
 
 prof: $(TARGET)
-	nvprof ./$(TARGET) 10000 | sort > /dev/null
-	nvprof ./$(TARGET) 30000 | sort > /dev/null
-	nvprof ./$(TARGET) 100000 | sort > /dev/null
-	nvprof ./$(TARGET) 500000 | sort > /dev/null
-	nvprof ./$(TARGET) 1000000 | sort > /dev/null
+	# nvprof ./$(TARGET) 100000 100000> /dev/null
+	nvprof ./$(TARGET) 10000 10000
 
 debug:
-	$(NVCC) $(NVCC_FLAGS) -g -o $(TARGET) $(OBJECTS)
-	cuda-gdb./$(TARGET)
+	$(NVCC) $(NVCC_FLAGS) -G -g -o $(TARGET) $(OBJECTS)
+	cuda-gdb ./$(TARGET)

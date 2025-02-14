@@ -30,7 +30,9 @@ log: $(TARGET)
 	./$(TARGET) 1000 5000 >> results.csv
 	./$(TARGET) 10000 10000 >> results.csv
 	./$(TARGET) 10000 50000 >> results.csv
-	./$(TARGET) 100000 500000 >> results.csv
+	./$(TARGET) 50000 50000 >> results.csv
+	./$(TARGET) 100000 100000 >> results.csv
+	# ./$(TARGET) 1000000 1000000 >> results.csv
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

@@ -1,6 +1,9 @@
 #ifndef CUDA_HELP
 #define CUDA_HELP
 
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+
 #define MIN_CUDA_THREADS (32)
 
 #define CHECK_CUDA(call) \

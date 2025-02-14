@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "../common/timer.h"
 
-#define MAX_VAL         (100)
+#define MAX_VAL         (255)
 #define KERNEL_SIZE     (3)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -44,7 +44,8 @@ int main(const int argc, const char** argv) {
 
     init_arr(frame, mat_size);
     
-    float KERNEL[KERNEL_SIZE * KERNEL_SIZE] = {1};
+    float KERNEL[KERNEL_SIZE * KERNEL_SIZE];
+    for (int i = 0; i < KERNEL_SIZE * KERNEL_SIZE; i ++) KERNEL[i] = 0.5f;
 
     StartTimer();
 
@@ -95,10 +96,10 @@ void get_window(int* arr, int x, int y, size_t Nx, size_t Ny,
 
     for (int i = 0; i < kernel_size; i++) {
         for (int j = 0; j < kernel_size; j++) {
-            int xi = WRAP_INDEX(x + i - offset, Nx);  
-            int yj = WRAP_INDEX(y + j - offset, Ny);  
+            int yi = WRAP_INDEX(y + i - offset, Ny);  
+            int xj = WRAP_INDEX(x + j - offset, Nx);  
             
-            window[i * kernel_size + j] = arr[xi * Ny + yj];  
+            window[i * kernel_size + j] = arr[yi * Nx + xj];  
         }
     }
 }
