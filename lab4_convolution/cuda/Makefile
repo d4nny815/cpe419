@@ -33,10 +33,9 @@ log: $(TARGET)
 	@./$(TARGET) 10000 10000 >> results.csv
 	@./$(TARGET) 20000 50000 >> results.csv
 	@./$(TARGET) 2000 500000 >> results.csv
+	@./$(TARGET) 25000 25000 >> results.csv
+	@./$(TARGET) 35000 35000 >> results.csv
 	@./$(TARGET) 50000 50000 >> results.csv
-	@./$(TARGET) 10000 100000 >> results.csv
-	@./$(TARGET) 15000 100000 >> results.csv
-	@./$(TARGET) 1000000 1000000 >> results.csv
 
 prof: $(TARGET)
 	# nvprof ./$(TARGET) 100000 100000> /dev/null
