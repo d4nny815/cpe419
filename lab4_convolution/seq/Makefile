@@ -24,16 +24,14 @@ run: $(TARGET)
 
 log: $(TARGET)
 	@touch results.csv
-	@echo "Nx, Ny, N, time (sec)"
+	@echo "Nx, Ny, N, time (sec)" > results.csv
 	@./$(TARGET) 1000 1000 >> results.csv
 	@./$(TARGET) 5000 5000 >> results.csv
 	@./$(TARGET) 10000 10000 >> results.csv
 	@./$(TARGET) 20000 50000 >> results.csv
 	@./$(TARGET) 2000 500000 >> results.csv
-	@./$(TARGET) 50000 50000 >> results.csv
-	@./$(TARGET) 10000 100000 >> results.csv
-	@./$(TARGET) 15000 100000 >> results.csv
-	@./$(TARGET) 1000000 1000000 >> results.csv
+	@./$(TARGET) 25000 25000 >> results.csv
+	@./$(TARGET) 30000 30000 >> results.csv
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)

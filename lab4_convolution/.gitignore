@@ -1,7 +1,9 @@
 */system_info
 */*.o
+*.png
 */log*
 .vscode/
 
 */nbody
 */convolution
+*/results.csv
