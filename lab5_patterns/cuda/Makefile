@@ -27,7 +27,8 @@ run: $(TARGET)
 
 log: $(TARGET)
 	@touch results.csv
-	@echo "N, sumNeighbors, tNeighbors, sumStride, tStride" > results.csv
+	@echo "N,sumNeighbors,tNeighbors,sumStride,tStride,sumScan,tScan" > results.csv
+	@./$(TARGET) 501 >> results.csv
 	@./$(TARGET) 10000 >> results.csv
 	@./$(TARGET) 50000 >> results.csv
 	@./$(TARGET) 100000 >> results.csv
@@ -35,7 +36,6 @@ log: $(TARGET)
 	@./$(TARGET) 10000000 >> results.csv
 	@./$(TARGET) 100000000 >> results.csv
 	@./$(TARGET) 250000000 >> results.csv
-	@./$(TARGET) 250000001 >> results.csv
 
 prof: $(TARGET)
 	# nvprof ./$(TARGET) > /dev/null

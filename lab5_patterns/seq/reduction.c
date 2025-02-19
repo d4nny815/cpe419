@@ -53,11 +53,13 @@ int main(const int argc, const char** argv) {
     
     double sum;
     size_t old_n = N;
-    if ((N & (N - 1)) != 0) N = 1 << ((size_t)log2(N) + 1);
-    bytes = N * sizeof(double);
-    arr_seg_scan = realloc(arr_seg_scan, bytes);
-    if (!arr_seg_scan) exit(1);
-    for (size_t i = old_n; i < N; i++) arr_seg_scan[i] = 0.0f;
+    if ((N & (N - 1)) != 0) {
+        N = 1 << ((size_t)log2(N) + 1);
+        bytes = N * sizeof(double);
+        arr_seg_scan = realloc(arr_seg_scan, bytes);
+        if (!arr_seg_scan) exit(1);
+        for (size_t i = old_n; i < N; i++) arr_seg_scan[i] = 0.0f;
+    }
     
     StartTimer();
 
@@ -129,7 +131,10 @@ double reduction_stride(double* data, size_t N) {
 void segment_scan(double* data, size_t n, double* sum) {
     // reduction part
     for (size_t stride = 1; stride < n; stride *= 2) {
+        // printf("stride - %zu\n", stride);
+        #pragma omp parallel for schedule(static)  
         for (size_t i = 2 * stride - 1; i < n; i += 2 * stride) {
+            // printf("i = %zu %lf + %lf\n", i, data[i], data[i - stride]);
             data[i] += data[i - stride];
         } 
         #ifdef DEBUG
@@ -139,17 +144,18 @@ void segment_scan(double* data, size_t n, double* sum) {
     }
 
     *sum = data[n - 1];  
-    data[n - 1] = 0;    
+    data[n - 1] = 0;   
 
     // down sweep part
     for (size_t stride = n / 2; stride > 0; stride /= 2) {
+        #pragma omp parallel for schedule(static)  
         for (size_t i = stride * 2 - 1; i < n; i += stride * 2) {
             double tmp = data[i - stride];
             data[i - stride] = data[i];
             data[i] += tmp;
         }
-        
     }
+
     #ifdef DEBUG
     print_arr(data, n);
     #endif
@@ -157,8 +163,8 @@ void segment_scan(double* data, size_t n, double* sum) {
 
 void init_arr(double* data, size_t n) {
     for (size_t i = 0; i < n; i++) {
-        // data[i] = rand();
-        data[i] = i + 1;
+        data[i] = rand();
+        // data[i] = i + 1;
     }
 }
 
