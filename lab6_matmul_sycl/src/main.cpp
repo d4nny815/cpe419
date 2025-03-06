@@ -8,10 +8,15 @@ using namespace sycl;
 using namespace std;
 
 void init_arrs(queue& q, float* arr, const size_t width, const size_t height) {
+    std::time_t epoch_time = std::time(nullptr);
+
     q.submit([&](handler& h) {
         h.parallel_for(range<1>(width * height), [=](auto i){
-            arr[i] = static_cast<float>(i + 1);
-            // arr[i] = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) * 100.0f;
+            uint32_t seed = static_cast<uint32_t>(epoch_time * 6242878123) + i[0]; 
+            seed = (1664525 * seed + 1013904223) % 0xFFFFFFFF;
+
+            // Convert to float in range [0, 100]
+            arr[i] = static_cast<float>(seed) / static_cast<float>(0xFFFFFFFF) * 100.0f;
         });
     }).wait();
 }
@@ -49,10 +54,13 @@ void matmul_par(queue& q, float const* arr1, float const* arr2, float* res_arr,
 
 bool equal_arrs(float const* arr1, float const* arr2, 
         const size_t width, const size_t height) {
+    
+    constexpr float EPISLON = 1e-2; 
     for (size_t row = 0; row < height; row++){
         for(size_t col = 0; col < width; col++) {
-            if (arr1[row * width + col] != arr2[row * width + col]) {
-                cerr << "Arrays not equal.\n";
+            if (std::abs(arr1[row * width + col] - arr2[row * width + col]) > EPISLON) {
+                fprintf(stderr, "[%zu] %f != %f\n", row * width + col, 
+                    arr1[row * width + col], arr2[row * width + col]);
                 return false;
             }
         }
@@ -100,10 +108,10 @@ int main(void) {
     init_arrs(q, mat1, M, N);
     init_arrs(q, mat2, N, M);
 
-    print_arr(mat1, M, N);
-    printf("\n===========\n\n");
-    print_arr(mat2, N, M);
-    printf("\n===========\n\n");
+    // print_arr(mat1, M, N);
+    // printf("\n===========\n\n");
+    // print_arr(mat2, N, M);
+    // printf("\n===========\n\n");
 
     float* seq = (float*)malloc(N * N * sizeof(float));
     float* par = malloc_shared<float>(N * N, q);
@@ -119,9 +127,9 @@ int main(void) {
     matmul_seq(mat1, mat2, seq, M, N);
     matmul_par(q, mat1, mat2, par, M, N);
 
-    print_arr(seq, N, N);
-    printf("\n===========\n\n");
-    print_arr(par, N, N);
+    // print_arr(seq, N, N);
+    // printf("\n===========\n\n");
+    // print_arr(par, N, N);
 
     equal_arrs(seq, par, N, N);
 
