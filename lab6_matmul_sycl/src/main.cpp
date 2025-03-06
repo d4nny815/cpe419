@@ -2,40 +2,53 @@
 #include <array>
 #include <cstdlib>
 #include <iostream>
+#include <cmath>
 
 using namespace sycl;
 using namespace std;
 
-void init_arrs(queue& q, float* arr, size_t width, size_t height) {
-    range num_items{width * height};
-
-    auto e = q.parallel_for(range(width, height), [=](auto index) { 
-        size_t row = index[0];
-        size_t col = index[1];
-        arr[row * width + col] = 1.0f; 
-    });
-
-    // for (size_t row = 0; row < height; row++){
-    //     for(size_t col = 0; col < width; col++) {
-    //         arr[row * width + col] = std::rand();
-    //     }
-	// }
-    e.wait();
+void init_arrs(queue& q, float* arr, const size_t width, const size_t height) {
+    q.submit([&](handler& h) {
+        h.parallel_for(range<1>(width * height), [=](auto i){
+            arr[i] = static_cast<float>(i + 1);
+            // arr[i] = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX) * 100.0f;
+        });
+    }).wait();
 }
 
-void matmul_seq(float* arr1, float* arr2, float* res_arr, size_t width, size_t height) {
-	for (size_t row = 0; row < height; row++){
-        for(size_t col = 0; col < width; col++) {
-            float sum = 0;
+void matmul_seq(float const* arr1, float const* arr2, float* res_arr, 
+        const size_t width, const size_t height) {
+	
+    for (size_t row = 0; row < height; row++){
+        for(size_t col = 0; col < height; col++) {
+            size_t ind = row * height + col;
+            res_arr[ind] = 0.0f;
             for(size_t k = 0; k < width; k++){
-                sum += arr1[row * width + k] * arr2[k * width + col];
+                res_arr[ind] += arr1[row * width + k] * arr2[k * height + col];
             }
-            res_arr[row * width + col] = sum;
         }
 	}
 }
 
-bool equal_arrs(float** arr1, float** arr2, size_t width, size_t height) {
+void matmul_par(queue& q, float const* arr1, float const* arr2, float* res_arr, 
+        const size_t width, const size_t height) {
+	
+    q.submit([&](handler& h) {
+        h.parallel_for(range<2>(height, height), [=](id<2> i){
+            auto row = i[0];
+            auto col = i[1];
+            
+            float sum = 0.0f;
+            for(size_t k = 0; k < width; k++){
+                sum += arr1[row * width + k] * arr2[k * height + col];
+            }
+            res_arr[row * height + col] = sum;
+        });
+    }).wait();
+}
+
+bool equal_arrs(float const* arr1, float const* arr2, 
+        const size_t width, const size_t height) {
     for (size_t row = 0; row < height; row++){
         for(size_t col = 0; col < width; col++) {
             if (arr1[row * width + col] != arr2[row * width + col]) {
@@ -59,45 +72,63 @@ void print_arr(float* arr1, size_t width, size_t height) {
 
 int main(void) {
     // queue q(default_selector_v, exception_handler);
-    constexpr size_t ARR_WIDTH = 10;
-    constexpr size_t ARR_HEIGHT = 4;
+    constexpr size_t M = 10;
+    constexpr size_t N = 5;
 
-    queue q(default_selector_v);
+    auto selector = default_selector_v;
+    // auto selector = gpu_selector_v;
+
+    queue q(selector);
 
     std::srand(static_cast<unsigned>(std::time(nullptr)));
-
 
     // Print out the device information used for the kernel code.
     cout << "Running on device: "
         << q.get_device().get_info<info::device::name>() << "\n";
 
 
-    float* sequential = malloc_shared<float>(ARR_WIDTH * ARR_HEIGHT, q);
-    float* parallel = malloc_shared<float>(ARR_WIDTH * ARR_HEIGHT, q);
-
-    if ((sequential == nullptr) || (parallel == nullptr)) {
-        if (sequential != nullptr) free(sequential, q);
-        if (parallel != nullptr) free(parallel, q);
+    float* mat1 = malloc_shared<float>(M * N, q);
+    float* mat2 = malloc_shared<float>(M * N, q);
+    if ((mat1 == nullptr) || (mat2 == nullptr)) {
+        if (mat1 != nullptr) free(mat1, q);
+        if (mat2 != nullptr) free(mat2, q);
 
         cout << "Shared memory allocation failure.\n";
         return -1;
     }
 
-    init_arrs(q, sequential, ARR_WIDTH, ARR_HEIGHT);
-    print_arr(sequential, ARR_WIDTH, ARR_HEIGHT);
+    init_arrs(q, mat1, M, N);
+    init_arrs(q, mat2, N, M);
 
+    print_arr(mat1, M, N);
+    printf("\n===========\n\n");
+    print_arr(mat2, N, M);
+    printf("\n===========\n\n");
 
-    // seq_kernel(sequential, ARRAY_SIZE);
+    float* seq = (float*)malloc(N * N * sizeof(float));
+    float* par = malloc_shared<float>(N * N, q);
 
-    // parallel_kernel(q, parallel, ARRAY_SIZE);
+    if ((seq == nullptr) || (par == nullptr)) {
+        if (seq != nullptr) free(seq, q);
+        if (par != nullptr) free(par, q);
 
-    // if (!equal_arrs(sequential, parallel, ARRAY_SIZE)) {
-    //     exit(1);
-    // }    
+        cout << "Shared memory allocation failure.\n";
+        return -1;
+    }
 
-    printf("made it here\n");
-    free(sequential, q);
-    free(parallel, q);
+    matmul_seq(mat1, mat2, seq, M, N);
+    matmul_par(q, mat1, mat2, par, M, N);
+
+    print_arr(seq, N, N);
+    printf("\n===========\n\n");
+    print_arr(par, N, N);
+
+    equal_arrs(seq, par, N, N);
+
+    free(mat1, q);
+    free(mat2, q);
+    free(seq);
+    free(par, q);
 
     cout << "Successfully completed on device.\n";
     return 0;
