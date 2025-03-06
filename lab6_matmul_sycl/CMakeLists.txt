@@ -17,7 +17,7 @@ add_executable(${TARGET_NAME} ${SOURCES})
 
 # OS-specific options and libraries
 message(STATUS "Adding GCC style compiler flags")
-set(COMPILE_FLAGS "-fsycl -Wall -pedantic -Werror=return-type")
+set(COMPILE_FLAGS "-fsycl -Wall -pedantic -Werror=return-type -g")
 set(LINK_FLAGS "-fsycl")
 
 # Apply flags to the target
