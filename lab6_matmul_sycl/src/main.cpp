@@ -90,10 +90,10 @@ void print_arr(float* arr1, size_t width, size_t height) {
 
 int main(void) {
     // queue q(default_selector_v, exception_handler);
-    constexpr size_t N = 1000;
+    constexpr size_t N = 10000;
 
-    auto selector = cpu_selector_v;
-    // auto selector = gpu_selector_v;
+    // auto selector = cpu_selector_v;
+    auto selector = gpu_selector_v;
 
     queue q(selector);
 
@@ -134,8 +134,8 @@ int main(void) {
     }
 
     auto start = system_clock::now();
-    // matmul_seq(mat1, mat2, seq, N);
-    matmul_par(q, mat1, mat2, par, N);
+    matmul_seq(mat1, mat2, seq, N);
+    // matmul_par(q, mat1, mat2, par, N);
     auto elapsed = chrono::duration<double, std::milli>(system_clock::now() - start).count();
     printf("%zux%zu took %lf ms\n", N, N, elapsed);
 
