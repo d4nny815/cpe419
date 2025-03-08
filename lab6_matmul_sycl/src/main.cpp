@@ -3,9 +3,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <cmath>
+#include <chrono>
 
 using namespace sycl;
 using namespace std;
+using namespace chrono::_V2;
 
 void init_arrs(queue& q, float* arr, const size_t size) {
     std::time_t epoch_time = std::time(nullptr);
@@ -65,6 +67,7 @@ void equal_arrs(float const* arr1, float const* arr2,
             if (error > EPISLON) {
                 max_error = std::max(max_error, error);
                 num_errors++;
+                if (num_errors < 3)
                 fprintf(stderr, "[%zu] %f != %f\n", row * width + col, 
                     arr1[row * width + col], arr2[row * width + col]);
             }
@@ -89,7 +92,7 @@ int main(void) {
     // queue q(default_selector_v, exception_handler);
     constexpr size_t N = 1000;
 
-    auto selector = default_selector_v;
+    auto selector = cpu_selector_v;
     // auto selector = gpu_selector_v;
 
     queue q(selector);
@@ -130,14 +133,17 @@ int main(void) {
         return -1;
     }
 
-    matmul_seq(mat1, mat2, seq, N);
+    auto start = system_clock::now();
+    // matmul_seq(mat1, mat2, seq, N);
     matmul_par(q, mat1, mat2, par, N);
+    auto elapsed = chrono::duration<double, std::milli>(system_clock::now() - start).count();
+    printf("%zux%zu took %lf ms\n", N, N, elapsed);
 
     // print_arr(seq, N, N);
     // printf("\n===========\n\n");
     // print_arr(par, N, N);
 
-    equal_arrs(seq, par, N, N);
+    // equal_arrs(seq, par, N, N);
 
     free(mat1, q);
     free(mat2, q);
